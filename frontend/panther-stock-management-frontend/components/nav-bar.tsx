@@ -19,7 +19,7 @@ export function NavBar() {
   return (
     <header className="border-b bg-card">
       <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3 sm:px-6">
-        <span className="font-semibold tracking-tight">Panther Estoque</span>
+        <span className="font-semibold tracking-tight">Argoni</span>
         <nav className="flex flex-wrap gap-1">
           {links.map((link) => {
             const active = pathname === link.href;

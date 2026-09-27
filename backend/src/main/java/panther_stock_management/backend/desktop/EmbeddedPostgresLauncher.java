@@ -12,7 +12,7 @@ public final class EmbeddedPostgresLauncher {
 
     public static void iniciarEConfigurar() {
         try {
-            Path dataDir = Path.of(System.getProperty("user.home"), "PantherEstoque", "pgdata");
+            Path dataDir = Path.of(System.getProperty("user.home"), "ArgoniStock", "pgdata");
 
             EmbeddedPostgres postgres = EmbeddedPostgres.builder()
                     .setDataDirectory(dataDir)

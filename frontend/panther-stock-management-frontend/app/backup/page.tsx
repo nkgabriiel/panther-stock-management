@@ -167,7 +167,7 @@ function ConfiguracaoBackupForm({ configuracao }: { configuracao: ConfiguracaoBa
         <Label htmlFor="pastaLocal">Pasta local (no seu computador)</Label>
         <Input
           id="pastaLocal"
-          placeholder="Ex: C:\Users\seu-usuario\PantherEstoque\backups"
+          placeholder="Ex: C:\Users\seu-usuario\ArgoniStock\backups"
           value={pastaLocal}
           onChange={(event) => setPastaLocal(event.target.value)}
         />
@@ -176,7 +176,7 @@ function ConfiguracaoBackupForm({ configuracao }: { configuracao: ConfiguracaoBa
         <Label htmlFor="pastaDrive">Pasta do Google Drive (sincronizada)</Label>
         <Input
           id="pastaDrive"
-          placeholder="Ex: C:\Users\seu-usuario\Google Drive\PantherEstoque"
+          placeholder="Ex: C:\Users\seu-usuario\Google Drive\ArgoniStock"
           value={pastaDrive}
           onChange={(event) => setPastaDrive(event.target.value)}
         />

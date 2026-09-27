@@ -1,0 +1,47 @@
+{
+  "name": "argoni-stock-management-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Argoni Stock Management - aplicativo desktop",
+  "author": "Argoni",
+  "main": "main.js",
+  "scripts": {
+    "prepare:backend": "node scripts/prepare-backend.js",
+    "prepare:frontend": "node scripts/prepare-frontend.js",
+    "prepare:jre": "node scripts/prepare-jre.js",
+    "prepare:resources": "npm run prepare:backend && npm run prepare:frontend && npm run prepare:jre",
+    "start": "electron .",
+    "dist": "npm run prepare:resources && electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.argoni.stockmanagement",
+    "productName": "Argoni Stock Management",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js"
+    ],
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": "."
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Argoni Stock Management"
+    }
+  }
+}

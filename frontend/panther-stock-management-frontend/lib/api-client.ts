@@ -48,6 +48,7 @@ export const api = {
     listar: () => request<Produto[]>("produtos"),
     criar: (input: CriarProdutoInput) =>
       request<Produto>("produtos", { method: "POST", body: JSON.stringify(input) }),
+    excluir: (id: number) => request<void>(`produtos/${id}`, { method: "DELETE" }),
   },
   variacoes: {
     listar: () => request<Variacao[]>("variacoes"),
@@ -59,6 +60,7 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify({ estoqueAnunciado }),
       }),
+    excluir: (id: number) => request<void>(`variacoes/${id}`, { method: "DELETE" }),
   },
   movimentacoes: {
     listar: (filtro?: HistoricoFiltro) => {

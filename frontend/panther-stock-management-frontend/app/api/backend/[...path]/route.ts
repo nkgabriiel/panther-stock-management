@@ -38,7 +38,11 @@ async function forward(request: NextRequest, path: string[]) {
     responseHeaders.set("Content-Disposition", contentDisposition);
   }
 
-  return new NextResponse(bodyBuffer, {
+  // Responses with these statuses must not have a body (the Fetch API throws
+  // if you try to construct one with a body, even an empty one).
+  const isNullBodyStatus = response.status === 204 || response.status === 205 || response.status === 304;
+
+  return new NextResponse(isNullBodyStatus ? null : bodyBuffer, {
     status: response.status,
     headers: responseHeaders,
   });

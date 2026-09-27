@@ -57,6 +57,27 @@ export function useCriarVariacao() {
   });
 }
 
+export function useExcluirProduto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.produtos.excluir(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.produtos });
+      queryClient.invalidateQueries({ queryKey: queryKeys.variacoes });
+    },
+  });
+}
+
+export function useExcluirVariacao() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.variacoes.excluir(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.variacoes });
+    },
+  });
+}
+
 export function useAtualizarEstoqueAnunciado() {
   const queryClient = useQueryClient();
   return useMutation({

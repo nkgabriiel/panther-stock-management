@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCriarProduto, useCriarVariacao, useProdutos, useVariacoes } from "@/lib/queries";
+import {
+  useCriarProduto,
+  useCriarVariacao,
+  useExcluirProduto,
+  useExcluirVariacao,
+  useProdutos,
+  useVariacoes,
+} from "@/lib/queries";
 import type { TipoProduto, Variacao } from "@/lib/types";
 import { ApiError } from "@/lib/api-client";
 
@@ -79,8 +87,13 @@ export default function ProdutosPage() {
                 <CardDescription>
                   {(variacoesPorProduto.get(produto.id) ?? []).length} variação(ões)
                 </CardDescription>
-                <CardAction>
+                <CardAction className="flex items-center gap-2">
                   <NovaVariacaoDialog produtoId={produto.id} produtoNome={produto.nome} />
+                  <ExcluirProdutoButton
+                    produtoId={produto.id}
+                    produtoNome={produto.nome}
+                    temVariacoes={(variacoesPorProduto.get(produto.id) ?? []).length > 0}
+                  />
                 </CardAction>
               </CardHeader>
               <CardContent>
@@ -91,9 +104,15 @@ export default function ProdutosPage() {
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {(variacoesPorProduto.get(produto.id) ?? []).map((variacao) => (
-                      <Badge key={variacao.id} variant="outline" className="text-sm">
-                        {variacao.nome} · reserva {variacao.reservaSeguranca}
-                      </Badge>
+                      <div
+                        key={variacao.id}
+                        className="flex items-center gap-1 rounded-full border pl-3 pr-1 py-0.5"
+                      >
+                        <span className="text-sm">
+                          {variacao.nome} · reserva {variacao.reservaSeguranca}
+                        </span>
+                        <ExcluirVariacaoButton variacaoId={variacao.id} variacaoNome={variacao.nome} />
+                      </div>
                     ))}
                   </div>
                 )}
@@ -248,6 +267,116 @@ function NovaVariacaoDialog({
             </Button>
           </DialogFooter>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ExcluirProdutoButton({
+  produtoId,
+  produtoNome,
+  temVariacoes,
+}: {
+  produtoId: number;
+  produtoNome: string;
+  temVariacoes: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const excluirProduto = useExcluirProduto();
+
+  async function confirmar() {
+    try {
+      await excluirProduto.mutateAsync(produtoId);
+      toast.success(`Produto "${produtoNome}" excluído`);
+      setOpen(false);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Erro ao excluir produto");
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={<Button variant="destructive" size="icon-sm" aria-label={`Excluir ${produtoNome}`} />}
+      >
+        <Trash2 className="size-4" />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Excluir &quot;{produtoNome}&quot;?</DialogTitle>
+          <DialogDescription>
+            {temVariacoes
+              ? "Este produto tem variações cadastradas. Exclua as variações primeiro para poder excluir o produto."
+              : "Essa ação não pode ser desfeita."}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={confirmar}
+            disabled={temVariacoes || excluirProduto.isPending}
+          >
+            {excluirProduto.isPending ? "Excluindo…" : "Excluir"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ExcluirVariacaoButton({
+  variacaoId,
+  variacaoNome,
+}: {
+  variacaoId: number;
+  variacaoNome: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const excluirVariacao = useExcluirVariacao();
+
+  async function confirmar() {
+    try {
+      await excluirVariacao.mutateAsync(variacaoId);
+      toast.success(`Variação "${variacaoNome}" excluída`);
+      setOpen(false);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Erro ao excluir variação");
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-destructive hover:bg-destructive/10"
+            aria-label={`Excluir ${variacaoNome}`}
+          />
+        }
+      >
+        <Trash2 className="size-3" />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Excluir variação &quot;{variacaoNome}&quot;?</DialogTitle>
+          <DialogDescription>
+            Só é possível excluir se não houver movimentações, encomendas, pedidos ou kits usando
+            essa variação. Essa ação não pode ser desfeita.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={confirmar} disabled={excluirVariacao.isPending}>
+            {excluirVariacao.isPending ? "Excluindo…" : "Excluir"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -10,4 +10,8 @@ import panther_stock_management.backend.domain.Variacao;
 public interface ComposicaoKitRepository extends JpaRepository<ComposicaoKit, Long> {
 
     List<ComposicaoKit> findByKitVariacao(Variacao kitVariacao);
+
+    boolean existsByKitVariacao(Variacao kitVariacao);
+
+    boolean existsByVariacaoBase(Variacao variacaoBase);
 }

@@ -14,4 +14,6 @@ public interface EncomendaProducaoRepository extends JpaRepository<EncomendaProd
             + "where e.variacao = :variacao and e.status = :status")
     int somarQuantidadePorVariacaoEStatus(@Param("variacao") Variacao variacao,
             @Param("status") StatusEncomenda status);
+
+    boolean existsByVariacao(Variacao variacao);
 }

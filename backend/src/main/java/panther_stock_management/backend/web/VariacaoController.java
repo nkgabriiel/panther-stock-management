@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import panther_stock_management.backend.domain.Produto;
 import panther_stock_management.backend.domain.Variacao;
+import panther_stock_management.backend.repository.ComposicaoKitRepository;
+import panther_stock_management.backend.repository.EncomendaProducaoRepository;
+import panther_stock_management.backend.repository.MovimentacaoRepository;
+import panther_stock_management.backend.repository.PedidoReservadoRepository;
 import panther_stock_management.backend.repository.ProdutoRepository;
 import panther_stock_management.backend.repository.VariacaoRepository;
 import panther_stock_management.backend.service.AnuncioCalculator;
@@ -32,12 +37,23 @@ public class VariacaoController {
     private final VariacaoRepository variacaoRepository;
     private final ProdutoRepository produtoRepository;
     private final EstoqueService estoqueService;
+    private final MovimentacaoRepository movimentacaoRepository;
+    private final EncomendaProducaoRepository encomendaProducaoRepository;
+    private final PedidoReservadoRepository pedidoReservadoRepository;
+    private final ComposicaoKitRepository composicaoKitRepository;
 
     public VariacaoController(VariacaoRepository variacaoRepository, ProdutoRepository produtoRepository,
-            EstoqueService estoqueService) {
+            EstoqueService estoqueService, MovimentacaoRepository movimentacaoRepository,
+            EncomendaProducaoRepository encomendaProducaoRepository,
+            PedidoReservadoRepository pedidoReservadoRepository,
+            ComposicaoKitRepository composicaoKitRepository) {
         this.variacaoRepository = variacaoRepository;
         this.produtoRepository = produtoRepository;
         this.estoqueService = estoqueService;
+        this.movimentacaoRepository = movimentacaoRepository;
+        this.encomendaProducaoRepository = encomendaProducaoRepository;
+        this.pedidoReservadoRepository = pedidoReservadoRepository;
+        this.composicaoKitRepository = composicaoKitRepository;
     }
 
     @PostMapping
@@ -66,6 +82,27 @@ public class VariacaoController {
     @GetMapping
     public List<VariacaoResponse> listar() {
         return variacaoRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        Variacao variacao = variacaoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Variação não encontrada"));
+
+        boolean temHistorico = movimentacaoRepository.existsByVariacao(variacao)
+                || encomendaProducaoRepository.existsByVariacao(variacao)
+                || pedidoReservadoRepository.existsByVariacao(variacao)
+                || composicaoKitRepository.existsByKitVariacao(variacao)
+                || composicaoKitRepository.existsByVariacaoBase(variacao);
+
+        if (temHistorico) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Não é possível excluir: há movimentações, encomendas, pedidos ou composições de kit "
+                            + "associados a esta variação");
+        }
+
+        variacaoRepository.delete(variacao);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/estoque-anunciado")

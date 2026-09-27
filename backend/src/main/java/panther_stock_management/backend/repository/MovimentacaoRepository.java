@@ -24,4 +24,6 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
             + "order by m.data desc, m.id desc")
     List<Movimentacao> buscarComFiltros(@Param("produtoId") Long produtoId, @Param("variacaoId") Long variacaoId,
             @Param("dataInicio") LocalDate dataInicio, @Param("dataFim") LocalDate dataFim);
+
+    boolean existsByVariacao(Variacao variacao);
 }

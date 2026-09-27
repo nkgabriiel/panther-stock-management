@@ -13,4 +13,6 @@ public interface PedidoReservadoRepository extends JpaRepository<PedidoReservado
     @Query("select coalesce(sum(p.quantidade), 0) from PedidoReservado p "
             + "where p.variacao = :variacao and p.status = :status")
     int somarQuantidadePorVariacaoEStatus(@Param("variacao") Variacao variacao, @Param("status") StatusPedido status);
+
+    boolean existsByVariacao(Variacao variacao);
 }

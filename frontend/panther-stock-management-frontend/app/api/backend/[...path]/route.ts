@@ -6,29 +6,41 @@ const BACKEND_API_KEY = process.env.BACKEND_API_KEY ?? "";
 async function forward(request: NextRequest, path: string[]) {
   const targetUrl = `${BACKEND_URL}/api/${path.join("/")}${request.nextUrl.search}`;
 
+  const headers = new Headers();
+  const incomingContentType = request.headers.get("content-type");
+  if (incomingContentType) {
+    headers.set("Content-Type", incomingContentType);
+  }
+  headers.set("X-API-Key", BACKEND_API_KEY);
+
   const init: RequestInit = {
     method: request.method,
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": BACKEND_API_KEY,
-    },
+    headers,
   };
 
   if (request.method !== "GET" && request.method !== "HEAD") {
-    const body = await request.text();
-    if (body) {
-      init.body = body;
+    const bodyBuffer = await request.arrayBuffer();
+    if (bodyBuffer.byteLength > 0) {
+      init.body = bodyBuffer;
     }
   }
 
   const response = await fetch(targetUrl, init);
-  const text = await response.text();
+  const bodyBuffer = await response.arrayBuffer();
 
-  return new NextResponse(text, {
+  const responseHeaders = new Headers();
+  const contentType = response.headers.get("Content-Type");
+  if (contentType) {
+    responseHeaders.set("Content-Type", contentType);
+  }
+  const contentDisposition = response.headers.get("Content-Disposition");
+  if (contentDisposition) {
+    responseHeaders.set("Content-Disposition", contentDisposition);
+  }
+
+  return new NextResponse(bodyBuffer, {
     status: response.status,
-    headers: {
-      "Content-Type": response.headers.get("Content-Type") ?? "application/json",
-    },
+    headers: responseHeaders,
   });
 }
 

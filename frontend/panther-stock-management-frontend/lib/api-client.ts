@@ -1,11 +1,13 @@
 import type {
   ApiErrorBody,
+  ConfiguracaoBackup,
   CriarMovimentacaoInput,
   CriarProdutoInput,
   CriarVariacaoInput,
   HistoricoFiltro,
   Movimentacao,
   Produto,
+  ResultadoBackup,
   Variacao,
 } from "./types";
 
@@ -70,5 +72,27 @@ export const api = {
     },
     lancar: (input: CriarMovimentacaoInput) =>
       request<Movimentacao>("movimentacoes", { method: "POST", body: JSON.stringify(input) }),
+  },
+  backup: {
+    obterConfiguracao: () => request<ConfiguracaoBackup>("backup/configuracao"),
+    atualizarConfiguracao: (input: { pastaLocal: string; pastaDrive: string }) =>
+      request<ConfiguracaoBackup>("backup/configuracao", {
+        method: "PUT",
+        body: JSON.stringify(input),
+      }),
+    gerar: () => request<ResultadoBackup>("backup/gerar", { method: "POST" }),
+    urlDownload: () => "/api/backend/backup/download",
+    importar: async (arquivo: File) => {
+      const formData = new FormData();
+      formData.append("arquivo", arquivo);
+      const response = await fetch("/api/backend/backup/importar", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
+        throw new ApiError(response.status, body);
+      }
+    },
   },
 };

@@ -12,6 +12,7 @@ export const queryKeys = {
   produtos: ["produtos"] as const,
   variacoes: ["variacoes"] as const,
   movimentacoes: (filtro?: HistoricoFiltro) => ["movimentacoes", filtro ?? {}] as const,
+  configuracaoBackup: ["configuracaoBackup"] as const,
 };
 
 export function useProdutos() {
@@ -74,6 +75,43 @@ export function useLancarMovimentacao() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.variacoes });
       queryClient.invalidateQueries({ queryKey: ["movimentacoes"] });
+    },
+  });
+}
+
+export function useConfiguracaoBackup() {
+  return useQuery({
+    queryKey: queryKeys.configuracaoBackup,
+    queryFn: api.backup.obterConfiguracao,
+  });
+}
+
+export function useAtualizarConfiguracaoBackup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.backup.atualizarConfiguracao,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.configuracaoBackup });
+    },
+  });
+}
+
+export function useGerarBackup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.backup.gerar,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.configuracaoBackup });
+    },
+  });
+}
+
+export function useImportarBackup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.backup.importar,
+    onSuccess: () => {
+      queryClient.invalidateQueries();
     },
   });
 }

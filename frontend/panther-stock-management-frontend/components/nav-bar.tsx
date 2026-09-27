@@ -10,6 +10,7 @@ const links = [
   { href: "/lancamentos", label: "Lançamentos" },
   { href: "/historico", label: "Histórico" },
   { href: "/produtos", label: "Produtos e kits" },
+  { href: "/backup", label: "Backup" },
 ];
 
 export function NavBar() {

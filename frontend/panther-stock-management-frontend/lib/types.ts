@@ -63,3 +63,15 @@ export interface ApiErrorBody {
   mensagem?: string;
   erros?: Record<string, string>;
 }
+
+export interface ConfiguracaoBackup {
+  pastaLocal: string | null;
+  pastaDrive: string | null;
+  ultimoBackupEm: string | null;
+}
+
+export interface ResultadoBackup {
+  arquivosGravados: string[];
+  tamanhoBytes: number;
+  geradoEm: string;
+}

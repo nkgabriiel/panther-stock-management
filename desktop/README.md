@@ -66,6 +66,27 @@ Alternativa mais simples se a máquina permitir: ativar o "Developer Mode" do
 Windows (Configurações → Privacidade e segurança → Para desenvolvedores),
 que permite criar symlinks sem admin.
 
+## Atualização automática
+
+O app usa `electron-updater`, que usa o GitHub Releases deste repositório como
+"feed" de atualizações (config `build.publish` no `package.json`). Toda vez
+que o app inicia (build empacotado, não em `npm start`), ele checa
+silenciosamente se há uma versão mais nova publicada, baixa em segundo plano
+e, quando termina, mostra um diálogo perguntando se a pessoa quer reiniciar
+na hora ou deixar para a próxima vez que fechar o app.
+
+Isso só funciona a partir da primeira versão publicada com esse mecanismo
+(esta). Instaladores anteriores a essa versão continuam sem atualização
+automática — quem já tiver uma versão anterior instalada precisa baixar e
+instalar manualmente essa vez; a partir daqui, as próximas atualizações são
+automáticas.
+
+**Publicar uma nova versão**: além do instalador (`.exe`), o
+`electron-builder` também gera um `.exe.blockmap` e um `latest.yml` dentro de
+`release/`. Os **três arquivos** precisam ser anexados à Release do GitHub
+(não só o `.exe`) — é o `latest.yml` que o `electron-updater` consulta para
+saber se há uma versão nova e onde baixar.
+
 ## Configuração de backup
 
 O backend expõe endpoints (`/api/backup/*`) para configurar a pasta local e a

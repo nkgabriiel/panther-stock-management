@@ -1,4 +1,5 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, dialog } = require("electron");
+const { autoUpdater } = require("electron-updater");
 const { spawn } = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
@@ -141,6 +142,43 @@ function createMainWindow() {
   mainWindow.loadURL(`http://127.0.0.1:${FRONTEND_PORT}`);
 }
 
+function setupAutoUpdater() {
+  if (!isPackaged) return;
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  const log = (message) => backendLog.write(`[updater] ${message}\n`);
+  autoUpdater.logger = { info: log, warn: log, error: log, debug: () => {} };
+
+  autoUpdater.on("update-downloaded", (info) => {
+    dialog
+      .showMessageBox(mainWindow, {
+        type: "info",
+        buttons: ["Reiniciar agora", "Depois"],
+        defaultId: 0,
+        cancelId: 1,
+        title: "Atualização disponível",
+        message: `Uma nova versão (${info.version}) foi baixada.`,
+        detail: "Reinicie o aplicativo agora para aplicar a atualização, ou ela será aplicada automaticamente na próxima vez que você fechar o aplicativo.",
+      })
+      .then(({ response }) => {
+        if (response === 0) {
+          quitting = true;
+          autoUpdater.quitAndInstall();
+        }
+      });
+  });
+
+  autoUpdater.on("error", (error) => {
+    log(`error: ${error == null ? error : error.stack || error.message || error}`);
+  });
+
+  autoUpdater.checkForUpdates().catch((error) => {
+    log(`checkForUpdates failed: ${error == null ? error : error.message || error}`);
+  });
+}
+
 async function boot() {
   createLoadingWindow();
 
@@ -161,6 +199,7 @@ async function boot() {
   }
 
   createMainWindow();
+  setupAutoUpdater();
 }
 
 async function shutdownBackendGracefully() {

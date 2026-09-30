@@ -117,6 +117,7 @@ function createLoadingWindow() {
   font-family:Segoe UI, sans-serif;background:#faf6f2;color:#3a2a30;gap:16px;">
   <div style="font-size:20px;font-weight:600;letter-spacing:0.05em;">ARGONI</div>
   <div style="font-size:13px;color:#7a6a70;">Iniciando o sistema, um momento...</div>
+  <div style="font-size:11px;color:#a99aa0;">Na primeira vez pode demorar um pouco mais.</div>
 </body>
 </html>`;
   loadingWindow.loadURL("data:text/html," + encodeURIComponent(html));
@@ -183,9 +184,17 @@ async function boot() {
   createLoadingWindow();
 
   startBackend();
-  const backendReady = await waitForHttpOk(`http://127.0.0.1:${BACKEND_PORT}/health`, 60_000);
+  // Generous budget: on the very first run, the embedded Postgres has to be
+  // extracted and initialized (initdb) before Spring Boot even starts, which
+  // can take a minute or more on a slower disk/CPU. Subsequent runs reuse the
+  // existing data directory and become healthy in a few seconds.
+  const backendReady = await waitForHttpOk(`http://127.0.0.1:${BACKEND_PORT}/health`, 180_000);
   if (!backendReady) {
     backendLog.write("\n[timed out waiting for backend to become healthy]\n");
+    dialog.showErrorBox(
+      "Argoni Stock Management",
+      "O sistema não conseguiu iniciar a tempo. Feche o aplicativo, verifique sua conexão e antivírus, e tente novamente. Se o problema continuar, envie a pasta de logs para o suporte."
+    );
     app.quit();
     return;
   }
@@ -194,6 +203,10 @@ async function boot() {
   const frontendReady = await waitForHttpOk(`http://127.0.0.1:${FRONTEND_PORT}`, 30_000);
   if (!frontendReady) {
     frontendLog.write("\n[timed out waiting for frontend to become ready]\n");
+    dialog.showErrorBox(
+      "Argoni Stock Management",
+      "O sistema não conseguiu iniciar a tempo. Feche o aplicativo, verifique sua conexão e antivírus, e tente novamente. Se o problema continuar, envie a pasta de logs para o suporte."
+    );
     app.quit();
     return;
   }
